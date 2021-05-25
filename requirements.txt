@@ -1,0 +1,7 @@
+flask
+yelpapi
+google-cloud-datastore
+gunicorn
+python-dotenv
+google-cloud-language==2.0.0
+flask-googlemaps
