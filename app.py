@@ -14,18 +14,10 @@ import flask
 from flask.views import MethodView
 from index import Index
 from review import Review
-from dotenv import load_dotenv
-from flask_googlemaps import GoogleMaps
 import os
-
-load_dotenv()
-
 
 # Create app object
 app = flask.Flask(__name__)
-MAP_KEY = os.getenv('MAP_KEY')
-app.config['GOOGLEMAPS_KEY'] = MAP_KEY
-GoogleMaps(app)
 
 app.add_url_rule('/',
                  view_func=Index.as_view('index'),

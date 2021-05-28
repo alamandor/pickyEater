@@ -2,17 +2,14 @@ from flask import redirect, request, url_for, render_template
 from flask.views import MethodView
 from yelpapi import YelpAPI
 from google.cloud import language
-from flask_googlemaps import GoogleMaps
-from flask_googlemaps import Map
-from dotenv import load_dotenv
 import time
 import sys
 import os
 import json
 import gbmodel
-load_dotenv()
 
 YELP_API_KEY = os.getenv('YELP_API_KEY')
+MAP_KEY = os.getenv('MAP_KEY')
 
 
 class Review(MethodView):
@@ -118,39 +115,9 @@ class Review(MethodView):
             print("RETRIEVED FROM CACHE")
             top = self.sort_tuples(top, 3)
             print(top)
-        
 
-        ## Constructing map in view to pass to html with GoogleMaps API
-        map = Map(
-            # set identifier, varname
-            identifier = "map", varname = "map",
-            # set map base to user_location
-            lat = top[0][1], lng = top[0][2],
-            # Get all markers in map window 
-            fit_markers_to_bounds = True,
-            # Add markers of resturants
-            markers = [
-                {
-                    'lat': top[0][1],
-                    'lng': top[0][2],
-                    'infobox': top[0][0]
-                },
-                {
-                    'lat': top[1][1],
-                    'lng': top[1][2],
-                    'infobox': top[1][0]
-                },
-                {
-                    'lat': top[2][1],
-                    'lng': top[2][2],
-                    'infobox': top[2][0]
-                }
-            ],
-            # Size of map window
-            style="height:100%; width:100%; margin-left:auto; margin-right:auto;"
-        )
-        ## Send map and data to review.html and render it
-        return render_template('review.html', result=result,top=top, map=map)
+        ## Send data to review.html and render it
+        return render_template('review.html', result=result,top=top, map=map, key=MAP_KEY)
     
     def process_sentiments_with_resturants(self, sentiment_response, resturant_id, resturant_name, food):
         """
