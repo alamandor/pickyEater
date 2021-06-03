@@ -1,7 +1,7 @@
 from flask import redirect, request, url_for, render_template
 from flask.views import MethodView
-from yelpapi import YelpAPI
 from google.cloud import language
+from api import Yelp
 import time
 import sys
 import os
@@ -27,10 +27,7 @@ class Review(MethodView):
 
         :returns: Failure or success on rendered_template of review.html
         """
-        yelp_api = YelpAPI(YELP_API_KEY)
-        business_ids = []
-        review_business_list = []
-
+  
         result = request.form
         u_location = result['user_location']
         food = result['food']
@@ -42,36 +39,9 @@ class Review(MethodView):
 
         if len(table_results) == 0:
 
-            ## Yelp API query to find business ids based on form data
-            # Construct a list of dictionaries to keep restirant data with location and review
-            business_matches = yelp_api.search_query(location=u_location, term=food)
-            businesses = business_matches['businesses']
-            for b_ids in businesses:
-                b_dict = {
-                'name' : b_ids['name'],
-                'rating' : b_ids['rating'],
-                'lat' : b_ids['coordinates']['latitude'],
-                'long' : b_ids['coordinates']['longitude'],
-                'id' : b_ids['id'],
-                'reviews': []
-                }
-                review_business_list.append(b_dict)
-                business_ids.append(b_ids['id'])
+            yelp = Yelp(YELP_API_KEY)
+            review_business_list = yelp.getReviews(u_location, food)                
 
-            # Loop through businesses found in search query
-            for b_ids in business_ids:
-                # Ran into problems exceeding rate limit
-                time.sleep(0.2)
-                response = yelp_api.reviews_query(b_ids)
-
-            # Grab just the text from review response from yelp
-                reviews = response['reviews']
-                for text in reviews:
-                    for b in review_business_list:
-                        if b['id'] == b_ids:
-                            b['reviews'].append(text['text'])
-
-            ## End of Yelp API use
 
             ## List to store resturants with sentiments
             sentiment_tuple_list = []
