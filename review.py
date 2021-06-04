@@ -1,12 +1,9 @@
 from flask import redirect, request, url_for, render_template
 from flask.views import MethodView
-from google.cloud import language
 from api import Yelp, GoogleNLP
-import time
-import sys
-import os
-import json
 import gbmodel
+import time,sys,os,json
+
 
 YELP_API_KEY = os.getenv('YELP_API_KEY')
 MAP_KEY = os.getenv('MAP_KEY')
@@ -53,13 +50,10 @@ class Review(MethodView):
         # Or else we retrive from the cache in Datastore
         else:
             top_businesses = []
-            print("else statement")
             for item in table_results:
                 top_businesses.append([item['name'],item['lat'],item['lon'],item['sent'],])
             
-            print("RETRIEVED FROM CACHE")
-            top_businesses = self.sort_tuples(top_businesses, 3)
-            print(top_businesses)
+            top_businesses = self.sort_tuples(top_businesses, RESULT_AMOUNT)
 
         ## Send data to review.html and render it
         return render_template('review.html', result=result,top=top_businesses, map=map, key=MAP_KEY)
