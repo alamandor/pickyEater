@@ -15,7 +15,7 @@ class api:
 
 class Yelp(api):
     def __init__(self, apiKey):
-        super.__init__(apiKey)
+        super().__init__(apiKey)
         self.yelpAPI = YelpAPI(self.key)
         self.businesses_search_results = []
         self.business_ids = []

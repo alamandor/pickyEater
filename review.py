@@ -10,6 +10,7 @@ import gbmodel
 
 YELP_API_KEY = os.getenv('YELP_API_KEY')
 MAP_KEY = os.getenv('MAP_KEY')
+RESULT_AMOUNT = 3
 
 
 class Review(MethodView):
@@ -45,13 +46,10 @@ class Review(MethodView):
             googleNLP = GoogleNLP()
             googleNLP.sentiment_analysis(review_business_list,food)
 
-            top_businesses = googleNLP.get_top_sentiments(3)
+            top_businesses = googleNLP.get_top_sentiments(RESULT_AMOUNT)
 
             # Storing new search in database
-            model.insert(u_location, food, top_businesses[0][0],top_businesses[0][1],top_businesses[0][2],top_businesses[0][3])
-            model.insert(u_location, food, top_businesses[1][0],top_businesses[1][1],top_businesses[1][2],top_businesses[1][3])
-            model.insert(u_location, food, top_businesses[2][0],top_businesses[2][1],top_businesses[2][2],top_businesses[2][3])
-        
+            model.insert_results(u_location,food,top_businesses)
         # Or else we retrive from the cache in Datastore
         else:
             top_businesses = []

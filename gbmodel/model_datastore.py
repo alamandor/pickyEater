@@ -40,6 +40,10 @@ class model(Model):
             })
         self.client.put(rev)
         return True
+    def insert_results(self, location, search_term, businesses):
+        for x in range(len(businesses)):
+            self.insert(location, search_term, businesses[x][0], businesses[x][1], businesses[x][2], businesses[x][3])
+           
     def used_before(self,location, food):
         """
         Queries the database to see if this search has been done before.
