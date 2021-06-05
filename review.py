@@ -30,6 +30,9 @@ class Review(MethodView):
         u_location = result['user_location']
         food = result['food']
 
+        if len(u_location) == 0 or len(food) == 0:
+            return render_template('index.html', err="Form data missing")        
+
         model = gbmodel.get_model()
         
         # Query the cache to see if this search has been done before
@@ -64,3 +67,6 @@ class Review(MethodView):
         """
         sentiment_list.sort(key = lambda x: x[3] ,reverse=True)
         return sentiment_list[:n]
+    def get(self):
+        return render_template('index.html')
+

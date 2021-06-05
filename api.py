@@ -29,8 +29,11 @@ class Yelp(api):
     def searchBusinesses(self, location, searchTerm):
         ## Yelp API query to find business ids based on form data
         # Construct a list of dictionaries to keep restirant data with location and review
-        business_matches = self.yelpAPI.search_query(
+        try:
+            business_matches = self.yelpAPI.search_query(
             location=location, term=searchTerm)
+        except Exception as e:
+            raise e
         businesses = business_matches['businesses']
         for b_ids in businesses:
             b_dict = {

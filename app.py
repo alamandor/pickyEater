@@ -11,6 +11,7 @@ Adds 3 different routes once instantiated:
 
 """
 import flask
+from flask import render_template, redirect
 from flask.views import MethodView
 from index import Index
 from review import Review
@@ -19,16 +20,20 @@ import os
 # Create app object
 app = flask.Flask(__name__)
 
+
+def internal_error_handler(e):
+    return render_template('index.html', err=e), 500
+
+
+app.register_error_handler(500, internal_error_handler)
+
 app.add_url_rule('/',
                  view_func=Index.as_view('index'),
                  methods=["GET", 'POST'])
 
 app.add_url_rule('/reviews/',
                  view_func=Review.as_view('review'),
-                 methods=['POST'])
-
-
-
+                 methods=['POST', 'GET'])
 
 
 if __name__ == '__main__':

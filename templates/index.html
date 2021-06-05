@@ -24,6 +24,14 @@
 
                 </form>
             </div>
+            <div>
+                {% if err is defined %}
+                <p class="error">Something went wrong, Try another query and make sure to enter in both a food and
+                    location</p> <br />
+                <p class="error">Error: {{err}}</p>
+                {% else %}
+                {% endif %}
+            </div>
         </div>
 
     </div>

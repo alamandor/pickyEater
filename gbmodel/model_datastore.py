@@ -51,7 +51,7 @@ class model(Model):
         Returns results of query as a list since datastore instead gives you an iterator object
         """
         query = self.client.query(kind="picky-eater-aag3")
-        query.add_filter("location", "=", location)
-        query.add_filter("food", "=", food)
+        query.add_filter("location", "=", location.lower())
+        query.add_filter("food", "=", food.lower())
         res = query.fetch()
         return list(res)
