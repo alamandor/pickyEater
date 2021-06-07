@@ -3,3 +3,5 @@ yelpapi
 google-cloud-datastore
 gunicorn
 google-cloud-language==2.0.0
+google-api-python-client==2.7.0
+google-cloud-logging

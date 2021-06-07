@@ -13,19 +13,45 @@ Adds 3 different routes once instantiated:
 import flask
 from flask import render_template, redirect
 from flask.views import MethodView
+import logging
+from google.cloud import logging as glogging
+from googleapiclient.errors import HttpError
 from index import Index
 from review import Review
+from yelpapi import YelpAPI
 import os
+# Instantiates a client
+logging_client = glogging.Client()
+
+# The name of the log to write to
+log_name = "app-log"
+# Selects the log to write to
+Glogger = logging_client.logger(log_name)
+
+
+
 
 # Create app object
 app = flask.Flask(__name__)
-
-
+logging.basicConfig(filename='/var/log/record.log', level=logging.ERROR, format=f'%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+LOG = flask.logging.create_logger(app)
+@app.errorhandler(Exception)
 def internal_error_handler(e):
-    return render_template('index.html', err=e), 500
+    if isinstance(e,YelpAPI.YelpAPIError):
+        LOG.error("YELP API ERROR: " + str(e))
+        # Writes the log entry
+        Glogger.log_text("YELP API ERROR: " + str(e), severity="ERROR")
+        return render_template('index.html'), 500
+    if isinstance(e,HttpError):
+        LOG.error("Google NLP API ERROR: " + str(e))
+        Glogger.log_text("GOOGLE API ERROR: " + str(e), severity="ERROR")
+        return render_template('index.html'), 500
+    else:
+        LOG.error("INTERAL ERROR: " + str(e))
+        return render_template('index.html'), 500        
 
 
-app.register_error_handler(500, internal_error_handler)
+# app.register_error_handler(500, internal_error_handler)
 
 app.add_url_rule('/',
                  view_func=Index.as_view('index'),

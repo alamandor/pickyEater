@@ -15,18 +15,19 @@
         <li class="runnerups">{{top[2][0]}} with a score of {{top[2][3]}}</li>
     </p>
 </div>
-<script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&libraries=&v=weekly" async></script>
 <script>
 
     function initMap() {
         let topData = {{ top| tojson
     }}
     console.log(topData)
+
     const centerLoc = { lat: topData[0][1], lng: topData[0][2] };
     const map = new google.maps.Map(document.getElementById("map"), {
         zoom: 18,
         center: centerLoc,
     });
+
     const marker1 = new google.maps.Marker({
         position: { lat: topData[0][1], lng: topData[0][2] },
         map: map,
@@ -49,4 +50,5 @@
     map.fitBounds(bounds);
 
 }</script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{key}}&callback=initMap&libraries=&v=weekly" async></script>
 {% endblock %}

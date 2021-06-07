@@ -40,8 +40,11 @@ class Review(MethodView):
 
         if len(table_results) == 0:
 
-            yelp = Yelp(YELP_API_KEY)
-            review_business_list = yelp.getReviews(u_location, food)                
+            try:
+                yelp = Yelp(YELP_API_KEY)
+                review_business_list = yelp.getReviews(u_location, food)
+            except Exception as e:
+                raise e
 
             googleNLP = GoogleNLP()
             googleNLP.sentiment_analysis(review_business_list,food)

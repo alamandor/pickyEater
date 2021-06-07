@@ -1,5 +1,6 @@
 from yelpapi import YelpAPI
 from google.cloud import language
+from googleapiclient.errors import HttpError
 import time
 
 
@@ -48,19 +49,22 @@ class Yelp(api):
             self.business_ids.append(b_ids['id'])
 
     def getReviews(self, location, searchTerm):
-        self.searchBusinesses(location, searchTerm)
-        # Loop through businesses found in search query
-        for b_ids in self.business_ids:
-            # Ran into problems exceeding rate limit
-            time.sleep(0.2)
-            response = self.yelpAPI.reviews_query(b_ids)
+        try:
+            self.searchBusinesses(location, searchTerm)
+            # Loop through businesses found in search query
+            for b_ids in self.business_ids:
+                # Ran into problems exceeding rate limit
+                time.sleep(0.2)
+                response = self.yelpAPI.reviews_query(b_ids)
 
-            # Grab just the text from review response from yelp
-            reviews = response['reviews']
-            for text in reviews:
-                for b in self.businesses_search_results:
-                    if b['id'] == b_ids:
-                        b['reviews'].append(text['text'])
+                # Grab just the text from review response from yelp
+                reviews = response['reviews']
+                for text in reviews:
+                    for b in self.businesses_search_results:
+                        if b['id'] == b_ids:
+                            b['reviews'].append(text['text'])
+        except Exception as e:
+            raise e
 
         return self.getBusinesses()
 
@@ -71,24 +75,35 @@ class GoogleNLP:
         self.resturants_with_sentiments = []
 
     def sentiment_analysis(self,businesses,analysis_term):
-        for business in businesses:
-            b_reviews = business['reviews']
+        try:
+            for business in businesses:
+                b_reviews = business['reviews']
 
-            client = language.LanguageServiceClient()
-            document = language.Document(
-                content=str(b_reviews),
-                type_=language.Document.Type.PLAIN_TEXT,
-            )
-            response = client.analyze_entity_sentiment(
-                document=document,
-                encoding_type='UTF32',
-            )
-            highest_sentiment = self.process_sentiments_with_resturants(
-                response, business['id'], business['name'], analysis_term)
-            sentiment_with_resturant = (
-                business['name'], business['lat'], business['long'], highest_sentiment)
-            # print(sentiment_with_resturant)
-            self.resturants_with_sentiments.append(sentiment_with_resturant)
+                client = language.LanguageServiceClient()
+                document = language.Document(
+                    content=str(b_reviews),
+                    type_=language.Document.Type.PLAIN_TEXT,
+                )
+                response = client.analyze_entity_sentiment(
+                    document=document,
+                    encoding_type='UTF32',
+                )
+                highest_sentiment = self.process_sentiments_with_resturants(
+                    response, business['id'], business['name'], analysis_term)
+                sentiment_with_resturant = (
+                    business['name'], business['lat'], business['long'], highest_sentiment)
+                # print(sentiment_with_resturant)
+                self.resturants_with_sentiments.append(sentiment_with_resturant)
+        except HttpError as e:
+        # Google cloud api error codes: https://cloud.google.com/apis/design/errors
+            if e.resp.status in [401, 403]:
+                raise "Google API Error: Authentication/permission error"
+            elif e.resp.status == 400:
+                raise "Google API Error: Bad argument"
+            elif e.resp.status == 500:
+                raise "Google API Error: Internal Error on google's end"
+            else:
+                raise e.resp.reason
 
     def process_sentiments_with_resturants(self, sentiment_response, resturant_id, resturant_name, analysis_term):
         """
@@ -101,7 +116,7 @@ class GoogleNLP:
             sentiment = entity.sentiment
             magnitude = sentiment.magnitude
             score = sentiment.score
-            combined_score = score*magnitude
+            combined_score = score+magnitude
             if combined_score > highest and entity.name == analysis_term:
                 highest = combined_score
                 # print(u"resturant name: {}".format(resturant_name))

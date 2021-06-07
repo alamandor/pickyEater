@@ -4,6 +4,7 @@ Backend code for the homepage, simply renders index.html as this is just a stati
 from flask import redirect, request, url_for, render_template
 from flask.views import MethodView
 
+
 class Index(MethodView):
     """
     Driver function to render the homepage for site
